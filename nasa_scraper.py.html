@@ -1,0 +1,67 @@
+<html>
+<head>
+<title>nasa_scraper.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cf8e6d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #bcbec4;}
+.s3 { color: #6aab73;}
+.s4 { color: #7a7e85;}
+.s5 { color: #2aacb8;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+nasa_scraper.py</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">requests</span>
+<span class="s0">import </span><span class="s1">pandas </span><span class="s0">as </span><span class="s1">pd</span>
+<span class="s0">from </span><span class="s1">bs4 </span><span class="s0">import </span><span class="s1">BeautifulSoup</span>
+
+<span class="s0">class </span><span class="s1">NASAEarthDataScraper</span><span class="s2">:</span>
+    <span class="s0">def </span><span class="s1">__init__</span><span class="s2">(</span><span class="s1">self</span><span class="s2">):</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">base_url </span><span class="s2">= </span><span class="s3">&quot;https://www.earthdata.nasa.gov/engage/open-data-services-and-software/api&quot;</span>
+        <span class="s1">self</span><span class="s2">.</span><span class="s1">data </span><span class="s2">= []</span>
+
+    <span class="s0">def </span><span class="s1">scrape</span><span class="s2">(</span><span class="s1">self</span><span class="s2">):</span>
+        <span class="s4"># Send an HTTP GET request to the URL</span>
+        <span class="s1">response </span><span class="s2">= </span><span class="s1">requests</span><span class="s2">.</span><span class="s1">get</span><span class="s2">(</span><span class="s1">self</span><span class="s2">.</span><span class="s1">base_url</span><span class="s2">)</span>
+
+        <span class="s4"># Check if the request was successful</span>
+        <span class="s0">if </span><span class="s1">response</span><span class="s2">.</span><span class="s1">status_code </span><span class="s2">== </span><span class="s5">200</span><span class="s2">:</span>
+            <span class="s4"># Parse the HTML content of the page using BeautifulSoup</span>
+            <span class="s1">soup </span><span class="s2">= </span><span class="s1">BeautifulSoup</span><span class="s2">(</span><span class="s1">response</span><span class="s2">.</span><span class="s1">text</span><span class="s2">, </span><span class="s3">'html.parser'</span><span class="s2">)</span>
+
+            <span class="s4"># Find the elements containing data (you'll need to inspect the website's structure)</span>
+            <span class="s4"># For this example, let's say we're looking for links to datasets</span>
+            <span class="s1">dataset_links </span><span class="s2">= </span><span class="s1">soup</span><span class="s2">.</span><span class="s1">find_all</span><span class="s2">(</span><span class="s3">'a'</span><span class="s2">, </span><span class="s1">class_</span><span class="s2">=</span><span class="s3">'dataset-link'</span><span class="s2">)</span>
+
+            <span class="s4"># Extract data from the elements</span>
+            <span class="s0">for </span><span class="s1">link </span><span class="s0">in </span><span class="s1">dataset_links</span><span class="s2">:</span>
+                <span class="s1">dataset_name </span><span class="s2">= </span><span class="s1">link</span><span class="s2">.</span><span class="s1">text</span>
+                <span class="s1">dataset_url </span><span class="s2">= </span><span class="s1">link</span><span class="s2">[</span><span class="s3">'href'</span><span class="s2">]</span>
+                <span class="s1">self</span><span class="s2">.</span><span class="s1">data</span><span class="s2">.</span><span class="s1">append</span><span class="s2">({</span><span class="s3">'Dataset Name'</span><span class="s2">: </span><span class="s1">dataset_name</span><span class="s2">, </span><span class="s3">'Dataset URL'</span><span class="s2">: </span><span class="s1">dataset_url</span><span class="s2">})</span>
+
+            <span class="s1">print</span><span class="s2">(</span><span class="s3">&quot;Scraping completed.&quot;</span><span class="s2">)</span>
+        <span class="s0">else</span><span class="s2">:</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s3">&quot;Failed to retrieve the webpage. Status code:&quot;</span><span class="s2">, </span><span class="s1">response</span><span class="s2">.</span><span class="s1">status_code</span><span class="s2">)</span>
+
+    <span class="s0">def </span><span class="s1">save_to_csv</span><span class="s2">(</span><span class="s1">self</span><span class="s2">, </span><span class="s1">filename</span><span class="s2">):</span>
+        <span class="s0">if </span><span class="s1">self</span><span class="s2">.</span><span class="s1">data</span><span class="s2">:</span>
+            <span class="s1">df </span><span class="s2">= </span><span class="s1">pd</span><span class="s2">.</span><span class="s1">DataFrame</span><span class="s2">(</span><span class="s1">self</span><span class="s2">.</span><span class="s1">data</span><span class="s2">)</span>
+            <span class="s1">df</span><span class="s2">.</span><span class="s1">to_csv</span><span class="s2">(</span><span class="s1">filename</span><span class="s2">, </span><span class="s1">index</span><span class="s2">=</span><span class="s0">False</span><span class="s2">)</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s3">f&quot;Data saved to </span><span class="s0">{</span><span class="s1">filename</span><span class="s0">}</span><span class="s3">&quot;</span><span class="s2">)</span>
+        <span class="s0">else</span><span class="s2">:</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s3">&quot;No data to save.&quot;</span><span class="s2">)</span>
+
+<span class="s4"># Example usage:</span>
+<span class="s0">if </span><span class="s1">__name__ </span><span class="s2">== </span><span class="s3">&quot;__main__&quot;</span><span class="s2">:</span>
+    <span class="s1">scraper </span><span class="s2">= </span><span class="s1">NASAEarthDataScraper</span><span class="s2">()</span>
+    <span class="s1">scraper</span><span class="s2">.</span><span class="s1">scrape</span><span class="s2">()</span>
+    <span class="s1">scraper</span><span class="s2">.</span><span class="s1">save_to_csv</span><span class="s2">(</span><span class="s3">&quot;nasa_earth_data.csv&quot;</span><span class="s2">)</span>
+</pre>
+</body>
+</html>
